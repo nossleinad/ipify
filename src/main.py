@@ -19,28 +19,40 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def getinfo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
-    attribute_message = '\n'.join(
-        f"{attribute}={value}"
-        for attribute in dir(user)
-        if not attribute.startswith("_")
-        and not callable(value := getattr(user, attribute))
-        and not isinstance(value, staticmethod)
-    )
+    attributes = []
+    for attribute in dir(user):
+        if attribute.startswith('_'):
+            continue
+
+        value = getattr(user, attribute)
+
+        if callable(value) or isinstance(value, staticmethod):
+            continue
+
+        attributes.append((attribute, value))
+
+    attribute_message = '\n'.join(f"{attribute}={value}" for attribute, value in attributes)
 
     await context.bot.send_message(chat_id=update.effective_chat.id, text=attribute_message)
 
 
 async def help_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    help_message_rows = (
+        "```",
+        "Commands:",
+        "/help - Show this help message",
+        "/ipify - Get the bot's public IP address",
+        "/ping - pong",
+        "/start - Welcome message",
+        "",
+        "Message handlers:",
+        "echo - Echo your message"
+        "```"
+    )
+
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
-        text="""```
-        Commands:
-        /echo - Echo your message
-        /help - Show this help message
-        /ipify - Get the bot's public IP address
-        /ping - pong
-        /start - Welcome message
-        ```""",
+        text='\n'.join(help_message_rows),
         parse_mode="Markdown"
     )
 
