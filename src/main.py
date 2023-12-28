@@ -17,6 +17,19 @@ async def echo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
 
 
+async def getinfo(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    user = update.message.from_user
+    attribute_message = '\n'.join(
+        f"{attribute}={value}"
+        for attribute in dir(user)
+        if not attribute.startswith("__")
+        and not callable(value := getattr(user, attribute))
+        and not isinstance(value, staticmethod)
+    )
+
+    await context.bot.send_message(chat_id=update.effective_chat.id, text=attribute_message)
+
+
 async def help_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await context.bot.send_message(
         chat_id=update.effective_chat.id,
@@ -54,12 +67,14 @@ if __name__ == '__main__':
     application = ApplicationBuilder().token(os.getenv("API_KEY")).build()
 
     echo_handler = MessageHandler(filters.TEXT & (~filters.COMMAND), echo)
+    getinfo_handler = CommandHandler('getinfo', getinfo)
     help_handler = CommandHandler('help', help_message)
     ipify_handler = CommandHandler('ipify', ipify)
     ping_handler = CommandHandler('ping', ping)
     start_handler = CommandHandler('start', start)
 
     application.add_handler(echo_handler)
+    application.add_handler(getinfo_handler)
     application.add_handler(help_handler)
     application.add_handler(ipify_handler)
     application.add_handler(start_handler)
