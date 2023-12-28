@@ -22,7 +22,7 @@ async def getinfo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     attribute_message = '\n'.join(
         f"{attribute}={value}"
         for attribute in dir(user)
-        if not attribute.startswith("__")
+        if not attribute.startswith("_")
         and not callable(value := getattr(user, attribute))
         and not isinstance(value, staticmethod)
     )
